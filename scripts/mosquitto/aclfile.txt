@@ -1,0 +1,12 @@
+# This affects access control for clients with no username.
+topic readwrite rpc/request
+
+# This only affects clients with username "richard".
+user richard
+topic readwrite test
+topic readwrite rpc/request
+topic write +/responses
+topic readwrite diaries/#
+
+# This affects all clients.
+pattern read %c/responses
