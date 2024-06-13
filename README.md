@@ -31,33 +31,33 @@ These instruction describe how to setup the components on a Windows machine.
 
 ## Mosquitto - MQTT Broker
  
-    - Install Mosquitto from   https://mosquitto.org/download/
+ - Install Mosquitto from   https://mosquitto.org/download/
 
-    - Make sure the scripts in the %PROJECT_DIR%\scripts\mosquitto directory correctly refer to where mosqitto is installed
+ - Make sure the scripts in the %PROJECT_DIR%\scripts\mosquitto directory correctly refer to where mosqitto is installed
 
-    - Start a new terminal (i.e. cmd.exe )
+ - Start a new terminal (i.e. cmd.exe )
 
-    - Run %PROJECT_DIR%\scripts\mosquitto\mosquitto
+ - Run %PROJECT_DIR%\scripts\mosquitto\mosquitto
 
 ## Build
 
-    - Install GO from https://go.dev/doc/install
+ - Install GO from https://go.dev/doc/install
 
-    - Set GOPATH to your installation, e.g.    set GOPATH=%USERPROFILE%/go
+ - Set GOPATH to your installation, e.g.    set GOPATH=%USERPROFILE%/go
 
-    - Make sure that your PATH includes:     %GOPATH%\bin
+ - Make sure that your PATH includes:     %GOPATH%\bin
 
-    - Run %PROJECT_DIR%\scripts\build, (which will build and install the server and client to:  %GOPATH%\bin )
+ - Run %PROJECT_DIR%\scripts\build, (which will build and install the server and client to:  %GOPATH%\bin )
 
 
 ## Server
 
-    - Start a new terminal (i.e. cmd.exe )
+ - Start a new terminal (i.e. cmd.exe )
 
-    - Run %PROJECT_DIR%\scripts\development-scripts\diary-server
+ - Run %PROJECT_DIR%\scripts\development-scripts\diary-server
 
 ## Client
 
-    - Start a new terminal (i.e. cmd.exe )
-    
-    - Run %PROJECT_DIR%\scripts\development-scripts\diary-server
+ - Start a new terminal (i.e. cmd.exe )
+
+ - Run %PROJECT_DIR%\scripts\development-scripts\diary-server
