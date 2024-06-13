@@ -2,7 +2,7 @@
 
 # Overview
 
-The *diaries* application is a shared web app which automates the transcribing and viewing of images of historic documents. People can view an image of a page and transcribe it into *html* so the document clearly viewed. Someone viewing a page will see the text change dynamically as someone else edits the same page.  This kind of webapp need both a request/resoonse and a publish/subscribe messaging model, which is provided my MQTT v5. 
+The *diaries* application is a shared web app which automates the transcribing and viewing of images of historic documents. Users can view an image of a page and transcribe it into *html* so the document clearly viewed. Someone viewing a page will see the text change dynamically as someone else edits the same page.  This kind of webapp needs both a request/resoonse and a publish/subscribe messaging model, which is provided my MQTT v5. 
 
 *MQTT* requires a broker process to be running to which apps connect. Although all the apps connecting to the *MQTT* broker are its clients, one of these apps is server for the webapp, managing a database of document images and html fragments, with which the webapp clients interact via the *MQTT* boker topic tree.
 
@@ -58,4 +58,3 @@ These instruction describe how to setup the components on a Windows machine.
 
     Start a new terminal (i.e. cmd.exe )
     Run %PROJECT_DIR%\scripts\development-scripts\diary-server
-    
