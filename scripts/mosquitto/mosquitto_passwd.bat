@@ -1,7 +1,7 @@
 @echo off
 
 setlocal
-cd %USERPROFILE%\Mosquitto
+cd %~dp0
 
 @echo on
 copy pwfile.source.txt pwfile.txt
