@@ -61,30 +61,12 @@ func publisher(ctx context.Context, config autopaho.ClientConfig) error {
 	config.SessionExpiryInterval = 60
 	config.OnConnectionUp = func(cm *autopaho.ConnectionManager, connAck *paho.Connack) {
 		log.Println("mqtt connection up")
-		// Subscribing in the OnConnectionUp callback is recommended (ensures the subscription is reestablished if
-		// the connection drops)
-		topic := "diaries/pages"
-		if _, err := cm.Subscribe(context.Background(), &paho.Subscribe{
-			Subscriptions: []paho.SubscribeOptions{
-				{Topic: topic, QoS: 1},
-			},
-		}); err != nil {
-			log.Printf("failed to subscribe (%s). This is likely to mean no messages will be received.", err)
-		}
-		log.Printf("Subscribed to: %s\n", topic)
 	}
 	config.OnConnectError = func(err error) { log.Printf("error whilst attempting connection: %s\n", err) }
 	// eclipse/paho.golang/paho provides base mqtt functionality, the below config will be passed in for each connection
 	config.ClientConfig = paho.ClientConfig{
 		// If you are using QOS 1/2, then it's important to specify a client id (which must be unique)
-		ClientID: "publisher",
-		// OnPublishReceived is a slice of functions that will be called when a message is received.
-		// You can write the function(s) yourself or use the supplied Router
-		OnPublishReceived: []func(paho.PublishReceived) (bool, error){
-			func(pr paho.PublishReceived) (bool, error) {
-				// log.Printf("received message on topic %s; body: %s (retain: %t)\n", pr.Packet.Topic, pr.Packet.Payload, pr.Packet.Retain)
-				return true, nil
-			}},
+		ClientID:      "publisher",
 		OnClientError: func(err error) { log.Printf("client error: %s\n", err) },
 		OnServerDisconnect: func(d *paho.Disconnect) {
 			if d.Properties != nil {
@@ -117,7 +99,7 @@ func publisher(ctx context.Context, config autopaho.ClientConfig) error {
 	return nil
 }
 
-func listener(ctx context.Context, config autopaho.ClientConfig, topic string, qos byte) {
+func rpc_listener(ctx context.Context, config autopaho.ClientConfig, topic string, qos byte) {
 	initialSubscriptionMade := make(chan struct{}) // Closed when subscription made (otherwise we might send request before subscription in place)
 	var initialSubscriptionOnce sync.Once          // We only want to close the above once!
 
@@ -197,8 +179,6 @@ func listener(ctx context.Context, config autopaho.ClientConfig, topic string, q
 }
 
 func main() {
-	// ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	// defer cancel()
 
 	ctx := context.Background()
 
@@ -235,7 +215,7 @@ func main() {
 
 	publisher(ctx, config)
 
-	listener(ctx, config, *requestTopic, qos) // Start the listener (this will respond to requests)
+	rpc_listener(ctx, config, *requestTopic, qos) // Start the listener (this will respond to requests)
 }
 
 func GetStringArgument(key string, data *map[string]interface{}) (string, error) {

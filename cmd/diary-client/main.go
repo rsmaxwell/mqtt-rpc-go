@@ -44,7 +44,7 @@ func main() {
 	defer cancel()
 
 	server := flag.String("server", "mqtt://127.0.0.1:1883", "The full URL of the MQTT server to connect to")
-	rTopic := flag.String("rtopic", "rpc/request", "Topic for requests to go to")
+	rTopic := flag.String("rtopic", "request", "Topic for requests to go to")
 	username := flag.String("username", "", "A username to authenticate to the MQTT server")
 	password := flag.String("password", "", "Password to match username")
 	flag.Parse()
@@ -103,7 +103,7 @@ func remoteProcedureCall(ctx context.Context, genericConfig autopaho.ClientConfi
 		defer cancel()
 		if _, err := cm.Subscribe(ctx, &paho.Subscribe{
 			Subscriptions: []paho.SubscribeOptions{
-				{Topic: fmt.Sprintf("%s/responses", config.ClientID), QoS: qos},
+				{Topic: fmt.Sprintf("response/%s", config.ClientID), QoS: qos},
 			},
 		}); err != nil {
 			log.Printf("requestor failed to subscribe (%s). This is likely to mean no messages will be received.", err)
@@ -136,7 +136,7 @@ func remoteProcedureCall(ctx context.Context, genericConfig autopaho.ClientConfi
 	h, err := rpc.NewHandler(ctx, rpc.HandlerOpts{
 		Conn:             cm,
 		Router:           router,
-		ResponseTopicFmt: "%s/responses",
+		ResponseTopicFmt: "response/%s",
 		ClientID:         config.ClientID,
 	})
 
