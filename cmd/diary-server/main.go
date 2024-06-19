@@ -183,7 +183,7 @@ func main() {
 	ctx := context.Background()
 
 	server := flag.String("server", "mqtt://127.0.0.1:1883", "The full URL of the MQTT server to connect to")
-	requestTopic := flag.String("rtopic", "rpc/request", "Topic for requests to go to")
+	requestTopic := flag.String("rtopic", "request", "Topic for requests to go to")
 	username := flag.String("username", "", "A username to authenticate to the MQTT server")
 	password := flag.String("password", "", "Password to match username")
 	flag.Parse()
