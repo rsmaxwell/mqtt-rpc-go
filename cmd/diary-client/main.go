@@ -145,7 +145,9 @@ func remoteProcedureCall(ctx context.Context, genericConfig autopaho.ClientConfi
 	}
 
 	request := `{"function":"calculator", "args": { "operation":"mul", "param1": 10, "param2": 5 } }`
-	log.Printf("Sending request: %s\n", request)
+	log.Printf("Publishing: %s to topic: %s with qos: %d\n", request, *rTopic, qos)
+	log.Printf("    replyTopic: %s\n", fmt.Sprintf("response/%s", config.ClientID))
+
 	resp, err := h.Request(ctx, &paho.Publish{
 		Topic:   *rTopic,
 		Payload: []byte(request),
