@@ -40,6 +40,9 @@ import (
 const qos = 0
 
 func main() {
+
+	log.Printf("Hello World!\n")
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
