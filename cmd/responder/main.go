@@ -49,10 +49,6 @@ var (
 	}
 )
 
-// func rpc_listener(ctx context.Context, config autopaho.ClientConfig, topic string, qos byte) {
-//
-// }
-
 func main() {
 
 	log.Printf("Responder")
