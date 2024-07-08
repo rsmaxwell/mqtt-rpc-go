@@ -1,4 +1,4 @@
-module github.com/rsmaxwell/diaries/server-go
+module github.com/rsmaxwell/mqtt-rpc-go
 
 go 1.22.0
 
