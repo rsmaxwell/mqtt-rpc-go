@@ -39,7 +39,7 @@ import (
 
 const qos = 0
 
-type Handler func(*sync.WaitGroup, request.Request) (response.Response, error)
+type Handler func(*sync.WaitGroup, request.Request) (response.Response, bool, error)
 
 var (
 	handlers = map[string]Handler{
@@ -122,7 +122,7 @@ func main() {
 					log.Fatalf("discarding request because handler not found: %s", req.Function)
 				}
 
-				result, err := handler(&wg, req)
+				result, keepRunning, err := handler(&wg, req)
 				if err != nil {
 					log.Fatalf("discarding request because handler '%s' failed: %s", req.Function, err)
 				}
@@ -140,6 +140,10 @@ func main() {
 				if err != nil {
 					log.Fatalf("failed to publish response: %s", err)
 				}
+
+				if !keepRunning {
+					wg.Done()
+				}
 			}
 			return true, nil
 		}}
@@ -154,28 +158,28 @@ func main() {
 	log.Printf("Quitting")
 }
 
-func calculator(wg *sync.WaitGroup, req request.Request) (response.Response, error) {
+func calculator(wg *sync.WaitGroup, req request.Request) (response.Response, bool, error) {
 	log.Printf("calculator")
 
 	operation, err := req.GetString("operation")
 	if err != nil {
 		resp := response.BadRequest()
 		resp.PutMessage(fmt.Sprintf("could not find 'operation' in arguments: %s", err))
-		return *resp, nil
+		return *resp, true, nil
 	}
 
 	param1, err := req.GetInteger("param1")
 	if err != nil {
 		resp := response.BadRequest()
 		resp.PutMessage(fmt.Sprintf("could not find 'param1' in arguments: %s", err))
-		return *resp, nil
+		return *resp, true, nil
 	}
 
 	param2, err := req.GetInteger("param2")
 	if err != nil {
 		resp := response.BadRequest()
 		resp.PutMessage(fmt.Sprintf("could not find 'param2' in arguments: %s", err))
-		return *resp, nil
+		return *resp, true, nil
 	}
 
 	defer func() {
@@ -201,24 +205,27 @@ func calculator(wg *sync.WaitGroup, req request.Request) (response.Response, err
 
 	resp := response.Success()
 	resp.PutInteger("result", value)
-	return *resp, nil
+	return *resp, true, nil
 }
 
-func getPages(wg *sync.WaitGroup, req request.Request) (response.Response, error) {
+func getPages(wg *sync.WaitGroup, req request.Request) (response.Response, bool, error) {
 	log.Printf("getPages")
 
 	resp := response.Success()
 	resp.PutString("result", "[ 'one', 'two', 'three' ]")
-	return *resp, nil
+	return *resp, true, nil
 }
 
-func quit(wg *sync.WaitGroup, req request.Request) (response.Response, error) {
+func quit(wg *sync.WaitGroup, req request.Request) (response.Response, bool, error) {
 	log.Printf("quit")
 
+	keepRunning, err := req.GetBoolean("keepRunning")
+	if err != nil {
+		resp := response.BadRequest()
+		resp.PutMessage(fmt.Sprintf("could not find 'keepRunning' in arguments: %s", err))
+		return *resp, true, nil
+	}
+
 	resp := response.Success()
-	resp.PutBoolean("keepRunning", false)
-
-	wg.Done()
-
-	return *resp, nil
+	return *resp, keepRunning, nil
 }

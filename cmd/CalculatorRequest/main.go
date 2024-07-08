@@ -161,8 +161,8 @@ func main() {
 
 	// Handle the response
 	if resp2.Ok() {
-		result, _ := resp2.GetString("result")
-		log.Printf("result: %s", result)
+		result, _ := resp2.GetInteger("result")
+		log.Printf("result: %d", result)
 	} else {
 		code, _ := resp2.GetCode()
 		message, _ := resp2.GetMessage()

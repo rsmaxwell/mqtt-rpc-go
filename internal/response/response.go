@@ -2,6 +2,7 @@ package response
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 )
 
@@ -46,12 +47,11 @@ func (r Response) PutCode(code int) {
 }
 
 func (r Response) GetCode() (int, error) {
-	value := r.Data["code"]
-	v, ok := value.(int)
-	if !ok {
-		return 0, fmt.Errorf("unexpected type for '%s': %+v", "code", value)
+	value, err := r.GetInteger("code")
+	if err != nil {
+		return 0, err
 	}
-	return v, nil
+	return int(value), nil
 }
 
 func (r Response) PutMessage(message string) {
@@ -81,7 +81,7 @@ func (r Response) PutInteger(key string, value int64) {
 
 func (r Response) GetInteger(key string) (int64, error) {
 	v, err := r.GetNumber(key)
-	return int64(v), err
+	return int64(math.Round(v)), err
 }
 
 func (r Response) PutNumber(key string, value float64) {

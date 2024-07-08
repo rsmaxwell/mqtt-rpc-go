@@ -120,6 +120,7 @@ func main() {
 	}
 
 	r := request.New("quit")
+	r.PutBoolean("keepRunning", false)
 
 	j, err := json.Marshal(r)
 	if err != nil {
@@ -144,8 +145,7 @@ func main() {
 
 	// Handle the response
 	if resp2.Ok() {
-		result, _ := resp2.GetString("result")
-		log.Printf("result: %s", result)
+		log.Printf("Responder is quitting")
 	} else {
 		code, _ := resp2.GetCode()
 		message, _ := resp2.GetMessage()
