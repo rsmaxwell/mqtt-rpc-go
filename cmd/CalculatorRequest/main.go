@@ -143,8 +143,6 @@ func main() {
 		panic(err)
 	}
 
-	// request := `{"function":"calculator", "args": { "operation":"mul", "param1": 10, "param2": 5 } }`
-
 	log.Printf("Sending request: %s", j)
 	resp, err := h.Request(ctx, &paho.Publish{
 		Topic:   *rTopic,
