@@ -39,7 +39,7 @@ import (
 const qos = 0
 
 type Handler interface {
-	Handle(*sync.WaitGroup, request.Request) (*response.Response, bool, error)
+	Handle(request.Request) (*response.Response, bool, error)
 }
 
 var (
@@ -123,7 +123,7 @@ func main() {
 					log.Fatalf("discarding request because handler not found: %s", req.Function)
 				}
 
-				result, quit, err := handler.Handle(&wg, req)
+				result, quit, err := handler.Handle(req)
 				if err != nil {
 					log.Fatalf("discarding request because handler '%s' failed: %s", req.Function, err)
 				}

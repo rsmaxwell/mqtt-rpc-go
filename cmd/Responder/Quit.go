@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
@@ -12,7 +11,7 @@ import (
 type Quit struct {
 }
 
-func (h *Quit) Handle(wg *sync.WaitGroup, req request.Request) (*response.Response, bool, error) {
+func (h *Quit) Handle(req request.Request) (*response.Response, bool, error) {
 	log.Printf("quit")
 
 	quit, err := req.GetBoolean("quit")

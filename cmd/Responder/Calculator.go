@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
@@ -12,7 +11,7 @@ import (
 type Calculator struct {
 }
 
-func (h *Calculator) Handle(wg *sync.WaitGroup, req request.Request) (resp *response.Response, quit bool, err error) {
+func (h *Calculator) Handle(req request.Request) (resp *response.Response, quit bool, err error) {
 	log.Printf("calculator")
 
 	operation, err := req.GetString("operation")

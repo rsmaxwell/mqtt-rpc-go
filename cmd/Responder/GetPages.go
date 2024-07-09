@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"sync"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
@@ -11,7 +10,7 @@ import (
 type GetPages struct {
 }
 
-func (h *GetPages) Handle(wg *sync.WaitGroup, req request.Request) (*response.Response, bool, error) {
+func (h *GetPages) Handle(req request.Request) (*response.Response, bool, error) {
 	log.Printf("getPages")
 
 	resp := response.Success()
