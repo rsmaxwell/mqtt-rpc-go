@@ -114,13 +114,12 @@ func main() {
 		ResponseTopicFmt: "response/%s",
 		ClientID:         config.ClientID,
 	})
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	r := request.New("quit")
-	r.PutBoolean("keepRunning", false)
+	r.PutBoolean("quit", true)
 
 	j, err := json.Marshal(r)
 	if err != nil {

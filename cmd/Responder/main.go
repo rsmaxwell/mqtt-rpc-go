@@ -122,7 +122,7 @@ func main() {
 					log.Fatalf("discarding request because handler not found: %s", req.Function)
 				}
 
-				result, keepRunning, err := handler(&wg, req)
+				result, quit, err := handler(&wg, req)
 				if err != nil {
 					log.Fatalf("discarding request because handler '%s' failed: %s", req.Function, err)
 				}
@@ -141,7 +141,7 @@ func main() {
 					log.Fatalf("failed to publish response: %s", err)
 				}
 
-				if !keepRunning {
+				if quit {
 					wg.Done()
 				}
 			}
@@ -165,21 +165,21 @@ func calculator(wg *sync.WaitGroup, req request.Request) (response.Response, boo
 	if err != nil {
 		resp := response.BadRequest()
 		resp.PutMessage(fmt.Sprintf("could not find 'operation' in arguments: %s", err))
-		return *resp, true, nil
+		return *resp, false, nil
 	}
 
 	param1, err := req.GetInteger("param1")
 	if err != nil {
 		resp := response.BadRequest()
 		resp.PutMessage(fmt.Sprintf("could not find 'param1' in arguments: %s", err))
-		return *resp, true, nil
+		return *resp, false, nil
 	}
 
 	param2, err := req.GetInteger("param2")
 	if err != nil {
 		resp := response.BadRequest()
 		resp.PutMessage(fmt.Sprintf("could not find 'param2' in arguments: %s", err))
-		return *resp, true, nil
+		return *resp, false, nil
 	}
 
 	defer func() {
@@ -205,7 +205,7 @@ func calculator(wg *sync.WaitGroup, req request.Request) (response.Response, boo
 
 	resp := response.Success()
 	resp.PutInteger("result", value)
-	return *resp, true, nil
+	return *resp, false, nil
 }
 
 func getPages(wg *sync.WaitGroup, req request.Request) (response.Response, bool, error) {
@@ -213,19 +213,19 @@ func getPages(wg *sync.WaitGroup, req request.Request) (response.Response, bool,
 
 	resp := response.Success()
 	resp.PutString("result", "[ 'one', 'two', 'three' ]")
-	return *resp, true, nil
+	return *resp, false, nil
 }
 
 func quit(wg *sync.WaitGroup, req request.Request) (response.Response, bool, error) {
 	log.Printf("quit")
 
-	keepRunning, err := req.GetBoolean("keepRunning")
+	quit, err := req.GetBoolean("quit")
 	if err != nil {
 		resp := response.BadRequest()
-		resp.PutMessage(fmt.Sprintf("could not find 'keepRunning' in arguments: %s", err))
-		return *resp, true, nil
+		resp.PutMessage(fmt.Sprintf("could not find 'quit' in arguments: %s", err))
+		return *resp, false, nil
 	}
 
 	resp := response.Success()
-	return *resp, keepRunning, nil
+	return *resp, quit, nil
 }
