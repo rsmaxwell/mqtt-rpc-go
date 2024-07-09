@@ -6,7 +6,7 @@ Some webapps rneed to use both a request/resonse and a publish/subscribe messagi
 
 *MQTT* requires a broker process to be running to which clients connect. In the case of mqtt-rpc there is one client (*Responder*) which listens to a well known topic, and sends replies to a reply_topic, the name of which was contained in the original request. There may be many *Requester* clients which send requests, and wait for a reply.  *Requester* clients can only make requests which are supported by the *Responder*.
 
-The *MQTT* broker used in this app is **Mosquitto** for the broker. Connections to the *MQTT* broker, which will be exposed to the internet, need to be appropiatly securd
+The *MQTT* broker used in this app is **Mosquitto** for the broker. Connections to the *MQTT* broker, which will be exposed to the internet, need to be appropiatly secured
 
 # Windows Setup
 
