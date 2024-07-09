@@ -25,7 +25,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"net/url"
 	"sync"
@@ -39,13 +38,15 @@ import (
 
 const qos = 0
 
-type Handler func(*sync.WaitGroup, request.Request) (*response.Response, bool, error)
+type Handler interface {
+	Handle(*sync.WaitGroup, request.Request) (*response.Response, bool, error)
+}
 
 var (
-	handlers = map[string]Handler{
-		"calculator": calculator,
-		"getPages":   getPages,
-		"quit":       quit,
+	requestHandlers = map[string]Handler{
+		"calculator": new(Calculator),
+		"getPages":   new(GetPages),
+		"quit":       new(Quit),
 	}
 )
 
@@ -117,12 +118,12 @@ func main() {
 					log.Printf("discarding request because message could not be decoded: %v", err)
 				}
 
-				handler := handlers[req.Function]
+				handler := requestHandlers[req.Function]
 				if handler == nil {
 					log.Fatalf("discarding request because handler not found: %s", req.Function)
 				}
 
-				result, quit, err := handler(&wg, req)
+				result, quit, err := handler.Handle(&wg, req)
 				if err != nil {
 					log.Fatalf("discarding request because handler '%s' failed: %s", req.Function, err)
 				}
@@ -156,79 +157,4 @@ func main() {
 	// Wait till asked to quit
 	wg.Wait()
 	log.Printf("Quitting")
-}
-
-func calculator(wg *sync.WaitGroup, req request.Request) (resp *response.Response, quit bool, err error) {
-	log.Printf("calculator")
-
-	operation, err := req.GetString("operation")
-	if err != nil {
-		resp := response.BadRequest()
-		resp.PutMessage(fmt.Sprintf("could not find 'operation' in arguments: %s", err))
-		return resp, false, nil
-	}
-
-	param1, err := req.GetInteger("param1")
-	if err != nil {
-		resp := response.BadRequest()
-		resp.PutMessage(fmt.Sprintf("could not find 'param1' in arguments: %s", err))
-		return resp, false, nil
-	}
-
-	param2, err := req.GetInteger("param2")
-	if err != nil {
-		resp := response.BadRequest()
-		resp.PutMessage(fmt.Sprintf("could not find 'param2' in arguments: %s", err))
-		return resp, false, nil
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			errorText := fmt.Sprintf("%s", r)
-			log.Println("RECOVER", errorText)
-			resp = response.BadRequest()
-			resp.PutMessage(errorText)
-			quit = false
-			err = nil
-		}
-	}()
-
-	var value int64
-
-	switch operation {
-	case "add":
-		value = param1 + param2
-	case "mul":
-		value = param1 * param2
-	case "div":
-		value = param1 / param2
-	case "sub":
-		value = param1 - param2
-	}
-
-	resp = response.Success()
-	resp.PutInteger("result", value)
-	return resp, false, nil
-}
-
-func getPages(wg *sync.WaitGroup, req request.Request) (*response.Response, bool, error) {
-	log.Printf("getPages")
-
-	resp := response.Success()
-	resp.PutString("result", "[ 'one', 'two', 'three' ]")
-	return resp, false, nil
-}
-
-func quit(wg *sync.WaitGroup, req request.Request) (*response.Response, bool, error) {
-	log.Printf("quit")
-
-	quit, err := req.GetBoolean("quit")
-	if err != nil {
-		resp := response.BadRequest()
-		resp.PutMessage(fmt.Sprintf("could not find 'quit' in arguments: %s", err))
-		return resp, false, nil
-	}
-
-	resp := response.Success()
-	return resp, quit, nil
 }
