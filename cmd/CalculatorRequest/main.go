@@ -152,7 +152,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("Received response: %s", string(resp.Payload))
+	// log.Printf("Received response: %s", string(resp.Payload))
 
 	var resp2 response.Response
 	if err := json.NewDecoder(bytes.NewReader(resp.Payload)).Decode(&resp2); err != nil {
@@ -166,6 +166,6 @@ func main() {
 	} else {
 		code, _ := resp2.GetCode()
 		message, _ := resp2.GetMessage()
-		log.Printf("error response: code: %d, message: %s", code, message)
+		log.Printf("ERROR: code: %d, message: %s", code, message)
 	}
 }
