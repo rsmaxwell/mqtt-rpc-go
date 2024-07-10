@@ -53,7 +53,7 @@ TEMPLATES_DIR=${PROJECT_DIR}/templates
 
 
 PROJECT=mqtt-rpc-go
-GROUPID=com.rsmaxwell.mqtt-rp
+GROUPID=com.rsmaxwell.mqtt-rpc
 ARTIFACTID=${PROJECT}_${FAMILY}_${ARCHITECTURE}
 PACKAGING=zip
 ZIPFILE=${ARTIFACTID}_${VERSION}.${PACKAGING}
