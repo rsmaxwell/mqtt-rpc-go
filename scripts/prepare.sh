@@ -2,19 +2,26 @@
 
 set -x 
 
-BRANCH=${1}
-if [ -z "${BRANCH}" ]; then
-    echo "Error: $0[${LINENO}]"
-    echo "Missing BRANCH argument"
-    exit 1
-fi
+FAMILY=""
+ARCHITECTURE=""
 
-if [ -z "$2" ]; then
-    echo "Missing PLATFORM argument"
-    exit 1
-fi
-PLATFORM="$2"
+case "$(uname -s)" in
+    CYGWIN*) FAMILY="cygwin" ;;
+    Linux*) 
+        . /etc/os-release
+        case ${ID} in
+            ubuntu) FAMILY="linux" ;;
+            alpine) FAMILY="alpine" ;;
+            *) FAMILY="linux" ;;
+        esac
+        ;;
+    *) FAMILY="unknown" ;;
+esac
 
+case "$(uname -m)" in 
+  amd64|x86_64)   ARCHITECTURE="amd64" ;; 
+  *) ARCHITECTURE="x86" ;; 
+esac
 
 
 
