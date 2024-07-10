@@ -19,76 +19,94 @@ PLATFORM="$2"
 
 
 if [ -z "${BUILD_ID}" ]; then
-    VERSION="0.0-SNAPSHOT"
+    BUILD_ID="(none)"
+    VERSION="0.0.1-SNAPSHOT"
+    REPOSITORY=snapshots
+    REPOSITORYID=snapshots
 else
-    VERSION="0.0.$((${BUILD_ID}))"
+    VERSION="0.0.1.$((${BUILD_ID}))"
+    REPOSITORY=releases
+    REPOSITORYID=releases
 fi
 
 
 
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-    
-find . -name "version.go" | while read versionfile; do
 
-    echo "Replacing tags in ${versionfile}"
+BASEDIR=$(dirname "$0")
+SCRIPT_DIR=$(cd $BASEDIR && pwd)
+PROJECT_DIR=$(dirname $SCRIPT_DIR)
+SOURCE_DIR=${PROJECT_DIR}/src
+BUILD_DIR=${PROJECT_DIR}/build
+TEMPLATES_DIR=${PROJECT_DIR}/templates
 
-    sed -i "s@<VERSION>@${VERSION}@g"            ${versionfile}
-    sed -i "s@<BUILD_ID>@${BUILD_ID}@g"          ${versionfile}
-    sed -i "s@<BUILD_DATE>@${TIMESTAMP}@g"       ${versionfile}
-    sed -i "s@<GIT_COMMIT>@${GIT_COMMIT}@g"      ${versionfile}
-    sed -i "s@<GIT_BRANCH>@${GIT_BRANCH}@g"      ${versionfile}
-    sed -i "s@<GIT_URL>@${GIT_URL}@g"            ${versionfile}
+
+
+
+
+
+PROJECT=mqtt-rpc-go
+GROUPID=com.rsmaxwell.mqtt-rp
+ARTIFACTID=${PROJECT}_${FAMILY}_${ARCHITECTURE}
+PACKAGING=zip
+ZIPFILE=${ARTIFACTID}_${VERSION}.${PACKAGING}
+
+
+
+TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')"
+GIT_COMMIT="${GIT_COMMIT:-(none)}"
+GIT_BRANCH="${GIT_BRANCH:-(none)}"
+GIT_URL="${GIT_URL:-(none)}"
+
+export PROJECT
+export REPOSITORY
+export REPOSITORYID
+export BUILD_ID
+export VERSION
+export TIMESTAMP
+export GIT_COMMIT
+export GIT_BRANCH
+export GIT_URL
+export FAMILY
+export ARCHITECTURE
+
+
+cd ${TEMPLATES_DIR}
+
+tags='$FAMILY,$ARCHITECTURE,$PROJECT,$REPOSITORY,$REPOSITORYID,$VERSION,$BUILD_ID,$TIMESTAMP,$GIT_COMMIT,$GIT_BRANCH,$GIT_URL'
+
+find . -type f | while read filename; do
+    echo "Writing ${filename}"
+    file=${SOURCE_DIR}/${filename}
+    dir=${directory ${file}}
+    mkdir -p ${dir}
+    envsubst "${tags}" < ${filename} > ${file}
 done
 
 
-BUILD_DIR=$(pwd)/build
-INFO_DIR=${BUILD_DIR}/info
 
 
+mkdir -p ${BUILD_DIR}
+cd ${BUILD_DIR}
 
-rm -rf ${BUILD_DIR}
-mkdir -p ${INFO_DIR}
-cd ${INFO_DIR}
+cat > buildinfo <<EOL
+BUILD_ID="${BUILD_ID}"
+VERSION="${VERSION}"
+REPOSITORY="${REPOSITORY}"
+REPOSITORYID="${REPOSITORYID}"
+REPOSITORY_URL="${REPOSITORY_URL}"
+FAMILY="${FAMILY}"
+ARCHITECTURE="${ARCHITECTURE}"
+PROJECT="${PROJECT}"
+GROUPID="${GROUPID}"
+ARTIFACTID="${ARTIFACTID}"
+PACKAGING="${PACKAGING}"
+ZIPFILE="${ZIPFILE}"
+TIMESTAMP="${TIMESTAMP}"
+GIT_COMMIT="${GIT_COMMIT}"
+GIT_BRANCH="${GIT_BRANCH}"
+GIT_URL="${GIT_URL}"
+EOL
 
-
-
-cat << EOF > info.json
-{
-	"VERSION": "${VERSION}",
-	"BUILD_ID": ${BUILD_ID},
-	"TIMESTAMP": "${TIMESTAMP}",
-	"pipeline": {
-		"GIT_COMMIT": "${GIT_COMMIT}",
-		"GIT_BRANCH": "${GIT_BRANCH}",
-		"GIT_URL": "${GIT_URL}"
-	},
-	"project": {
-		"GIT_COMMIT": "$(git rev-parse HEAD)",
-		"GIT_BRANCH": "${BRANCH}",
-		"GIT_URL": "$(git config --local remote.origin.url)"
-	}
-}
-EOF
-
-
-NAME=players-tt-api
-
-GROUPID=com.rsmaxwell.players
-ARTIFACTID=${NAME}-${PLATFORM}
-PACKAGING=zip
-
-REPOSITORY=releases
-REPOSITORYID=releases
-URL=https://pluto.rsmaxwell.co.uk/archiva/repository/${REPOSITORY}
-
-
-cat << EOF > maven.sh
-NAME=${NAME}
-GROUPID=${GROUPID}
-ARTIFACTID=${ARTIFACTID}
-PACKAGING=${PACKAGING}
-VERSION=${VERSION}
-REPOSITORY=${REPOSITORY}
-REPOSITORYID=${REPOSITORYID}
-URL=${URL}
-EOF
+pwd
+ls -al 
+cat buildinfo
