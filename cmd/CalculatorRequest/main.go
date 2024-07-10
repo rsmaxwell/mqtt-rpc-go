@@ -144,7 +144,7 @@ func main() {
 	}
 
 	log.Printf("Sending request: %s", j)
-	resp, err := h.Request(ctx, &paho.Publish{
+	reply, err := h.Request(ctx, &paho.Publish{
 		Topic:   *rTopic,
 		Payload: []byte(j),
 	})
@@ -154,18 +154,18 @@ func main() {
 
 	// log.Printf("Received response: %s", string(resp.Payload))
 
-	var resp2 response.Response
-	if err := json.NewDecoder(bytes.NewReader(resp.Payload)).Decode(&resp2); err != nil {
+	var resp response.Response
+	if err := json.NewDecoder(bytes.NewReader(reply.Payload)).Decode(&resp); err != nil {
 		log.Printf("could not decode response: %v", err)
 	}
 
 	// Handle the response
-	if resp2.Ok() {
-		result, _ := resp2.GetInteger("result")
+	if resp.Ok() {
+		result, _ := resp.GetInteger("result")
 		log.Printf("result: %d", result)
 	} else {
-		code, _ := resp2.GetCode()
-		message, _ := resp2.GetMessage()
+		code, _ := resp.GetCode()
+		message, _ := resp.GetMessage()
 		log.Printf("ERROR: code: %d, message: %s", code, message)
 	}
 }

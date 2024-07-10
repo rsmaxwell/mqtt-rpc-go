@@ -44,9 +44,10 @@ type Handler interface {
 
 var (
 	requestHandlers = map[string]Handler{
-		"calculator": new(Calculator),
-		"getPages":   new(GetPages),
-		"quit":       new(Quit),
+		"buildinfo":  new(BuildInfoHandler),
+		"calculator": new(CalculatorHandler),
+		"getPages":   new(GetPagesHandler),
+		"quit":       new(QuitHandler),
 	}
 )
 
@@ -123,12 +124,12 @@ func main() {
 					log.Fatalf("discarding request because handler not found: %s", req.Function)
 				}
 
-				result, quit, err := handler.Handle(req)
+				resp, quit, err := handler.Handle(req)
 				if err != nil {
 					log.Fatalf("discarding request because handler '%s' failed: %s", req.Function, err)
 				}
 
-				body, _ := json.Marshal(result)
+				body, _ := json.Marshal(resp)
 				log.Printf("Sending reply: %s", body)
 
 				_, err = received.Client.Publish(ctx, &paho.Publish{

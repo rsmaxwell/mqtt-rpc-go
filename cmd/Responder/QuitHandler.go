@@ -3,24 +3,25 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
 )
 
-type Quit struct {
+type QuitHandler struct {
 }
 
-func (h *Quit) Handle(req request.Request) (*response.Response, bool, error) {
-	log.Printf("quit")
+func (h *QuitHandler) Handle(req request.Request) (*response.Response, bool, error) {
+	log.Printf("QuitHandler")
 
 	quit, err := req.GetBoolean("quit")
 	if err != nil {
-		resp := response.BadRequest()
+		resp := response.New(http.StatusBadRequest)
 		resp.PutMessage(fmt.Sprintf("could not find 'quit' in arguments: %s", err))
 		return resp, false, nil
 	}
 
-	resp := response.Success()
+	resp := response.New(http.StatusOK)
 	return resp, quit, nil
 }

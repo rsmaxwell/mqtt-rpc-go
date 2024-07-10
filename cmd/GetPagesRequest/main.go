@@ -135,7 +135,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("Received response: %s", string(resp.Payload))
+	// log.Printf("Received response: %s", string(resp.Payload))
 
 	var resp2 response.Response
 	if err := json.NewDecoder(bytes.NewReader(resp.Payload)).Decode(&resp2); err != nil {

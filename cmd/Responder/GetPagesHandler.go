@@ -2,18 +2,19 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
 )
 
-type GetPages struct {
+type GetPagesHandler struct {
 }
 
-func (h *GetPages) Handle(req request.Request) (*response.Response, bool, error) {
-	log.Printf("getPages")
+func (h *GetPagesHandler) Handle(req request.Request) (*response.Response, bool, error) {
+	log.Printf("GetPagesHandler")
 
-	resp := response.Success()
+	resp := response.New(http.StatusOK)
 	resp.PutString("result", "[ 'one', 'two', 'three' ]")
 	return resp, false, nil
 }

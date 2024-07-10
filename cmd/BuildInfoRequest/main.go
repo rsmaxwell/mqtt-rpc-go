@@ -30,7 +30,7 @@ const qos = 0
 
 func main() {
 
-	log.Printf("QuitRequest")
+	log.Printf("BuildInfoRequest")
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
@@ -114,12 +114,12 @@ func main() {
 		ResponseTopicFmt: "response/%s",
 		ClientID:         config.ClientID,
 	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r := request.New("quit")
-	r.PutBoolean("quit", true)
+	r := request.New("buildinfo")
 
 	j, err := json.Marshal(r)
 	if err != nil {
@@ -127,7 +127,7 @@ func main() {
 	}
 
 	log.Printf("Sending request: %s", j)
-	resp, err := h.Request(ctx, &paho.Publish{
+	reply, err := h.Request(ctx, &paho.Publish{
 		Topic:   *rTopic,
 		Payload: []byte(j),
 	})
@@ -135,19 +135,28 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// log.Printf("Received response: %s", string(resp.Payload))
+	// log.Printf("Received response: %s", string(reply.Payload))
 
-	var resp2 response.Response
-	if err := json.NewDecoder(bytes.NewReader(resp.Payload)).Decode(&resp2); err != nil {
+	var resp response.Response
+	if err := json.NewDecoder(bytes.NewReader(reply.Payload)).Decode(&resp); err != nil {
 		log.Printf("could not decode response: %v", err)
 	}
 
 	// Handle the response
-	if resp2.Ok() {
-		log.Printf("Responder is quitting")
+	if resp.Ok() {
+		info, err := resp.GetBuildInfo()
+		if err != nil {
+			log.Printf("error: %s", err.Error())
+		} else {
+			log.Printf("Version:   %s", info.Version)
+			log.Printf("BuildDate: %s", info.BuildDate)
+			log.Printf("GitBranch: %s", info.GitBranch)
+			log.Printf("GitCommit: %s", info.GitCommit)
+			log.Printf("GitURL:    %s", info.GitURL)
+		}
 	} else {
-		code, _ := resp2.GetCode()
-		message, _ := resp2.GetMessage()
+		code, _ := resp.GetCode()
+		message, _ := resp.GetMessage()
 		log.Printf("error response: code: %d, message: %s", code, message)
 	}
 }
