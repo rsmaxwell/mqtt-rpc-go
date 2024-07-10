@@ -5,6 +5,7 @@ set -x
 FAMILY=""
 ARCHITECTURE=""
 
+
 case "$(uname -s)" in
     CYGWIN*) FAMILY="cygwin" ;;
     Linux*) 
