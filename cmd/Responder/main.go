@@ -90,6 +90,7 @@ func main() {
 		OnConnectError:    func(err error) { slog.Info(fmt.Sprintf("error whilst attempting connection: %s\n", err)) },
 		ClientConfig: paho.ClientConfig{
 			OnClientError: func(err error) { slog.Info(fmt.Sprintf("requested disconnect: %s\n", err)) },
+
 			OnServerDisconnect: func(d *paho.Disconnect) {
 				if d.Properties != nil {
 					slog.Info(fmt.Sprintf("requested disconnect: %s\n", d.Properties.ReasonString))
@@ -124,7 +125,6 @@ func main() {
 				slog.Info(fmt.Sprintf("Received request: %s", string(received.Packet.Payload)))
 
 				var req request.Request
-
 				if err := json.NewDecoder(bytes.NewReader(received.Packet.Payload)).Decode(&req); err != nil {
 					slog.Info(fmt.Sprintf("discarding request because message could not be decoded: %v", err))
 				}
