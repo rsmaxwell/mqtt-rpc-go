@@ -25,13 +25,16 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"log"
+	"fmt"
+	"log/slog"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/eclipse/paho.golang/autopaho"
 	"github.com/eclipse/paho.golang/paho"
+	"github.com/rsmaxwell/mqtt-rpc-go/internal/loggerlevel"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
 )
@@ -53,7 +56,7 @@ var (
 
 func main() {
 
-	log.Printf("Responder")
+	slog.Info("Responder")
 
 	server := flag.String("server", "mqtt://127.0.0.1:1883", "The URL of the MQTT server")
 	requestTopic := flag.String("rtopic", "request", "Topic for requests to go to")
@@ -61,9 +64,16 @@ func main() {
 	password := flag.String("password", "", "Password to match username")
 	flag.Parse()
 
+	err := loggerlevel.SetLoggerLevel()
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
 	serverUrl, err := url.Parse(*server)
 	if err != nil {
-		panic(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	var wg sync.WaitGroup
@@ -77,14 +87,14 @@ func main() {
 		KeepAlive:         30,
 		ConnectRetryDelay: 2 * time.Second,
 		ConnectTimeout:    5 * time.Second,
-		OnConnectError:    func(err error) { log.Printf("error whilst attempting connection: %s\n", err) },
+		OnConnectError:    func(err error) { slog.Info("error whilst attempting connection: %s\n", err) },
 		ClientConfig: paho.ClientConfig{
-			OnClientError: func(err error) { log.Printf("requested disconnect: %s\n", err) },
+			OnClientError: func(err error) { slog.Info("requested disconnect: %s\n", err) },
 			OnServerDisconnect: func(d *paho.Disconnect) {
 				if d.Properties != nil {
-					log.Printf("requested disconnect: %s\n", d.Properties.ReasonString)
+					slog.Info(fmt.Sprintf("requested disconnect: %s\n", d.Properties.ReasonString))
 				} else {
-					log.Printf("requested disconnect; reason code: %d\n", d.ReasonCode)
+					slog.Info(fmt.Sprintf("requested disconnect; reason code: %d\n", d.ReasonCode))
 				}
 			},
 		},
@@ -104,33 +114,33 @@ func main() {
 				{Topic: *requestTopic, QoS: qos},
 			},
 		}); err != nil {
-			log.Printf("listener failed to subscribe (%s). This is likely to mean no messages will be received.", err)
+			slog.Info(fmt.Sprintf("listener failed to subscribe (%s). This is likely to mean no messages will be received.", err))
 			return
 		}
 	}
 	config.OnPublishReceived = []func(paho.PublishReceived) (bool, error){
 		func(received paho.PublishReceived) (bool, error) {
 			if received.Packet.Properties != nil && received.Packet.Properties.CorrelationData != nil && received.Packet.Properties.ResponseTopic != "" {
-				log.Printf("Received request: %s", string(received.Packet.Payload))
+				slog.Info(fmt.Sprintf("Received request: %s", string(received.Packet.Payload)))
 
 				var req request.Request
 
 				if err := json.NewDecoder(bytes.NewReader(received.Packet.Payload)).Decode(&req); err != nil {
-					log.Printf("discarding request because message could not be decoded: %v", err)
+					slog.Info("discarding request because message could not be decoded: %v", err)
 				}
 
 				handler := requestHandlers[req.Function]
 				if handler == nil {
-					log.Fatalf("discarding request because handler not found: %s", req.Function)
+					slog.Info(fmt.Sprintf("discarding request because handler not found: %s", req.Function))
 				}
 
 				resp, quit, err := handler.Handle(req)
 				if err != nil {
-					log.Fatalf("discarding request because handler '%s' failed: %s", req.Function, err)
+					slog.Info("discarding request because handler '%s' failed: %s", req.Function, err)
 				}
 
 				body, _ := json.Marshal(resp)
-				log.Printf("Sending reply: %s", body)
+				slog.Info(fmt.Sprintf("Sending reply: %s", body))
 
 				_, err = received.Client.Publish(ctx, &paho.Publish{
 					Properties: &paho.PublishProperties{
@@ -140,7 +150,7 @@ func main() {
 					Payload: body,
 				})
 				if err != nil {
-					log.Fatalf("failed to publish response: %s", err)
+					slog.Error(fmt.Sprintf("failed to publish response: %s", err))
 				}
 
 				if quit {
@@ -152,10 +162,11 @@ func main() {
 
 	_, err = autopaho.NewConnection(ctx, config)
 	if err != nil {
-		panic(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	// Wait till asked to quit
 	wg.Wait()
-	log.Printf("Quitting")
+	slog.Info("Quitting")
 }
