@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
@@ -13,7 +14,7 @@ type CalculatorHandler struct {
 }
 
 func (h *CalculatorHandler) Handle(req request.Request) (resp *response.Response, quit bool, err error) {
-	log.Printf("CalculatorHandler")
+	slog.Info("CalculatorHandler")
 
 	operation, err := req.GetString("operation")
 	if err != nil {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
@@ -12,7 +12,7 @@ type GetPagesHandler struct {
 }
 
 func (h *GetPagesHandler) Handle(req request.Request) (*response.Response, bool, error) {
-	log.Printf("GetPagesHandler")
+	slog.Info("GetPagesHandler")
 
 	resp := response.New(http.StatusOK)
 	resp.PutString("result", "[ 'one', 'two', 'three' ]")

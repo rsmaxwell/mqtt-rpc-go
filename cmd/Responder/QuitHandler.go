@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
@@ -13,7 +13,7 @@ type QuitHandler struct {
 }
 
 func (h *QuitHandler) Handle(req request.Request) (*response.Response, bool, error) {
-	log.Printf("QuitHandler")
+	slog.Info("QuitHandler")
 
 	quit, err := req.GetBoolean("quit")
 	if err != nil {

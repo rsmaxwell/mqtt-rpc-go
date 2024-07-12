@@ -12,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/url"
 	"os"
 	"os/signal"
@@ -22,6 +23,7 @@ import (
 	"github.com/eclipse/paho.golang/autopaho"
 	"github.com/eclipse/paho.golang/autopaho/extensions/rpc"
 	"github.com/eclipse/paho.golang/paho"
+	"github.com/rsmaxwell/mqtt-rpc-go/internal/loggerlevel"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/request"
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/response"
 )
@@ -41,9 +43,16 @@ func main() {
 	password := flag.String("password", "", "Password to match username")
 	flag.Parse()
 
+	err := loggerlevel.SetLoggerLevel()
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
 	serverUrl, err := url.Parse(*server)
 	if err != nil {
-		panic(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	config := autopaho.ClientConfig{
@@ -96,7 +105,8 @@ func main() {
 
 	cm, err := autopaho.NewConnection(ctx, config)
 	if err != nil {
-		panic(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	// Wait for the subscription to be made (otherwise we may miss the response!)
@@ -115,7 +125,8 @@ func main() {
 		ClientID:         config.ClientID,
 	})
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	r := request.New("quit")
@@ -123,7 +134,8 @@ func main() {
 
 	j, err := json.Marshal(r)
 	if err != nil {
-		panic(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	log.Printf("Sending request: %s", j)
@@ -132,7 +144,8 @@ func main() {
 		Payload: []byte(j),
 	})
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(err.Error())
+		os.Exit(1)
 	}
 
 	// log.Printf("Received response: %s", string(resp.Payload))

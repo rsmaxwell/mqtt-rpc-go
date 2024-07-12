@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/rsmaxwell/mqtt-rpc-go/internal/buildinfo"
@@ -13,7 +13,7 @@ type BuildInfoHandler struct {
 }
 
 func (h *BuildInfoHandler) Handle(req request.Request) (*response.Response, bool, error) {
-	log.Printf("BuildInfoHandler")
+	slog.Info("BuildInfoHandler")
 
 	info := buildinfo.NewBuildInfo()
 
